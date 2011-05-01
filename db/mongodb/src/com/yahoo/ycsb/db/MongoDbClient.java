@@ -74,12 +74,8 @@ public class MongoDbClient extends DB {
             if (url.startsWith("mongodb://")) {
                 url = url.substring(10);
             }
-            
-	    // need to append db to url.
-            url += "/"+database;
-            System.out.println("new database url = "+url);
+
             mongo = new Mongo(new DBAddress(url));
-            System.out.println("mongo connection created with "+url);
         } catch (Exception e1) {
             logger.error(
                     "Could not initialize MongoDB connection pool for Loader: "
@@ -103,7 +99,7 @@ public class MongoDbClient extends DB {
             db = mongo.getDB(database);
 	    db.requestStart(); 
             DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
+            DBObject q = new BasicDBObject().append("keyid", key);
             if (writeConcern.equals(WriteConcern.SAFE)) {
                 q.put("$atomic", true);
             }
@@ -144,7 +140,7 @@ public class MongoDbClient extends DB {
             db.requestStart();
 
             DBCollection collection = db.getCollection(table);
-            DBObject r = new BasicDBObject().append("_id", key);
+            DBObject r = new BasicDBObject().append("keyid", key);
             r.putAll(values);
 
             collection.setWriteConcern(writeConcern);
@@ -191,7 +187,7 @@ public class MongoDbClient extends DB {
             db.requestStart();
 
             DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
+            DBObject q = new BasicDBObject().append("keyid", key);
             DBObject fieldsToReturn = new BasicDBObject();
             boolean returnAllFields = fields == null;
 
@@ -241,7 +237,7 @@ public class MongoDbClient extends DB {
             db.requestStart();
 
             DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
+            DBObject q = new BasicDBObject().append("keyid", key);
             DBObject u = new BasicDBObject();
             DBObject fieldsToSet = new BasicDBObject();
             Iterator<String> keys = values.keySet().iterator();
@@ -295,7 +291,7 @@ public class MongoDbClient extends DB {
             DBCollection collection = db.getCollection(table);
             // { "_id":{"$gte":startKey, "$lte":{"appId":key+"\uFFFF"}} }
             DBObject scanRange = new BasicDBObject().append("$gte", startkey);
-            DBObject q = new BasicDBObject().append("_id", scanRange);
+            DBObject q = new BasicDBObject().append("keyid", scanRange);
             DBCursor cursor = collection.find(q).limit(recordcount);
             while (cursor.hasNext()) {
 	       //toMap() returns a Map, but result.add() expects a Map<String,String>. Hence, the suppress warnings.
@@ -317,34 +313,8 @@ public class MongoDbClient extends DB {
 	
     }
 
-	@Override
-	public int truncate(String table) {
-		com.mongodb.DB db = null;
-		try {
-		  db = mongo.getDB(database);
-	    
-	    db.requestStart();
 	
-	    DBCollection collection = db.getCollection(table);
-	    DBObject q = new BasicDBObject();
-	    collection.remove(q);          
-	
-	
-	    return 0;
-		} catch (Exception e) {
-		      System.out.println(e.toString());
-		    logger.error(e + "", e);
-		    return 1;
-		} finally {
-		  if (db!=null)
-		  {
-		     db.requestDone();
-		  }
-		}
-        
-	}
 
-	
 }
 
 
